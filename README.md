@@ -2,7 +2,7 @@
 
 Botões de **vidro líquido** com refração de verdade: a imagem que está atrás do botão aparece **aumentada no centro**, **torcida na borda** e com as cores **separadas** (dispersão vermelho/azul), sem contorno desenhado. A borda existe só por luz e sombra.
 
-Tudo roda na GPU (WebGL, um fragment shader pequeno). Aparelho fraco não baixa nem roda nada: fica com um botão simples de CSS.
+Tudo roda na GPU (WebGL, um fragment shader pequeno). Sem WebGL, fica um botão simples de CSS.
 
 - Sem dependências, um arquivo JS (~12 KB) e um CSS.
 - Funciona igual em Chrome, Safari e Firefox (não usa `backdrop-filter: url()`).
@@ -55,11 +55,6 @@ Objeto passado a `LiquidGlass({...})`:
 | `edgeBend` | `0.56` | quanto a borda "escorre" (torção) |
 | `dispersion` | `4.4` | separação das cores na borda, em px |
 | `band` | `0.55` | onde a curvatura começa, fração do raio (0 = lente toda) |
-| `param` | `glass` | nome do parâmetro de URL de teste |
-| `minCores` | `6` | núcleos mínimos (`hardwareConcurrency`) |
-| `minMemory` | `4` | GB mínimos (`deviceMemory`, só quando o navegador informa) |
-| `weakGpu` | regex | placas tratadas como fracas (SwiftShader, llvmpipe, Intel integrada, Radeon integrada...) |
-| `maxFrameMs` | `20` | trava: média por quadro nos 30 primeiros quadros em movimento |
 | `textureUrl` | `img.currentSrc` | função `(img) => url`; use para pedir uma versão menor ou com CORS |
 | `onFallback` | `null` | função `(motivo)` chamada quando a lente não é usada |
 
@@ -69,16 +64,13 @@ No CSS: `--lg-size` (tamanho do botão redondo), `--lg-fallback-bg`, `--lg-fallb
 
 ## Quando a lente liga (e quando não)
 
-O botão simples (`.lg-btn`: círculo cinza translúcido, borda de 1 px, texto branco, hover com aumento de 1,06x) é sempre o padrão. A lente só entra, depois do `load` e com o navegador ocioso, se **todos** os testes passam:
+O botão simples (`.lg-btn`: círculo cinza translúcido, borda de 1 px, texto branco, hover com aumento de 1,06x) é sempre a base. A lente entra depois do `load`, com o navegador ocioso, a menos que:
 
-- WebGL disponível e shader compilado;
-- `navigator.hardwareConcurrency >= minCores`;
-- `navigator.deviceMemory >= minMemory` (Safari não informa: vale só os núcleos);
-- placa que não seja software nem integrada (lida por `WEBGL_debug_renderer_info`);
-- sem `prefers-reduced-motion: reduce` e sem `navigator.connection.saveData`;
-- **trava em tempo real**: se a média dos primeiros 30 quadros passar de `maxFrameMs`, a lente se desliga sozinha e a decisão fica na sessão (`sessionStorage`).
+- o navegador não tenha WebGL (ou o shader não compile);
+- a pessoa use `prefers-reduced-motion: reduce`;
+- a imagem atrás não possa ser lida (CORS, veja Limites).
 
-Para testar: `?glass=1` força a lente (ignora placa e trava) e `?glass=0` força a versão simples. O valor fica na sessão.
+Nesses casos o botão fica na versão simples e `onFallback(motivo)` é chamado.
 
 ## Limites
 
@@ -86,13 +78,13 @@ Para testar: `?glass=1` força a lente (ignora placa e trava) e `?glass=0` forç
 - A lente só refrata uma `<img>` (não `background-image`, vídeo ou texto) que fique **atrás** do elemento. Sem imagem atrás, o botão fica só com a luz e a sombra suaves.
 - Uma segunda `<img>` com CORS é baixada por imagem de fundo (por padrão a mesma URL). Use `textureUrl` para apontar uma versão menor (1000 a 1500 px bastam).
 - O canvas WebGL é compartilhado e redimensionado a cada elemento; centenas de lentes visíveis ao mesmo tempo não são o alvo (o script só desenha as que estão na tela).
-- Máquinas sem GPU (headless, VMs) renderizam por software: lento por definição, por isso ficam na versão simples.
+- Máquinas sem GPU (headless, VMs) renderizam o WebGL por software, o que deixa a lente lenta.
 - `color-mix()` no CSS exige navegador de 2023 em diante; antes disso o botão perde só as sombras internas.
 
 ## Estrutura
 
 ```
-liquid-glass-lens.js   a lente (WebGL, teste de aparelho, trava de quadros)
+liquid-glass-lens.js   a lente (WebGL)
 liquid-glass.css       versão simples + sombras da gotinha (variáveis)
 demo/index.html        demonstração autocontida
 ```

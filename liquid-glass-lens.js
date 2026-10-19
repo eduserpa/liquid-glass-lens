@@ -10,8 +10,8 @@
  * Como funciona: um único canvas WebGL compartilhado desenha, para cada elemento, a imagem (<img>) que está atrás dele
  * com aumento no centro, torção na faixa da borda e dispersão (R, G e B lidos em pontos levemente diferentes), tudo no
  * fragment shader. O resultado é copiado para um canvas 2D dentro do elemento. A cada quadro só mudam posição e escala
- * da imagem (uniforms); quando ela para de se mover, o laço para. Aparelho fraco, sem WebGL, com movimento reduzido ou
- * com economia de dados nunca carrega a lente: o elemento fica com a versão simples do CSS.
+ * da imagem (uniforms); quando ela para de se mover, o laço para. Sem WebGL ou com movimento reduzido, o elemento fica
+ * com a versão simples do CSS.
  */
 (function (root) {
   'use strict';
@@ -22,11 +22,6 @@
     edgeBend: 0.56, // quanto a borda "escorre" (torção)
     dispersion: 4.4, // separação das cores na borda, em px
     band: 0.55, // onde a curvatura começa, fração do raio (0 = lente toda, 0.9 = só uma fita)
-    param: 'glass', // ?glass=1 força a lente, ?glass=0 força a versão simples (vale na sessão)
-    minCores: 6, // núcleos mínimos (navigator.hardwareConcurrency)
-    minMemory: 4, // GB mínimos (navigator.deviceMemory, quando o navegador informa)
-    weakGpu: /SwiftShader|llvmpipe|Basic Render|Software|Intel(?!.*Arc)|Radeon\(TM\) Graphics|Radeon Graphics|Vega \d/i,
-    maxFrameMs: 20, // trava: média de tempo por quadro nos primeiros 30 quadros em movimento; acima disso desliga
     textureUrl: function (img) { return img.currentSrc || img.src; }, // troque para pedir uma versão menor/CORS da imagem
     onFallback: null // function (motivo) chamada quando a lente não é usada
   };
@@ -64,28 +59,15 @@
     var doc = document, html = doc.documentElement;
     var reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
     var visible = new Set(), lenses = new Map(), pics = new Map();
-    var gl, prog, loc, glc, io, raf = 0, still = 0, last = 0, timer = 0, slow = 0, nFrames = 0, prevT = 0, forced = false, dead = false;
+    var gl, prog, loc, glc, io, raf = 0, still = 0, last = 0, timer = 0, dead = false;
 
     function clamp(v) { return Math.max(0, Math.min(1, v)); }
     function fallback(why) { if (opt.onFallback) opt.onFallback(why); return false; }
 
-    // ---- decisão: lente ou versão simples -------------------------------------------------------------------------------
+    // ---- decisão: sem WebGL ou com movimento reduzido, fica a versão simples ----------------------------------------------
     function allowed() {
-      var q = new URLSearchParams(location.search).get(opt.param), f = null, slowSession = null;
-      try {
-        if (q === '0' || q === '1') sessionStorage.setItem(opt.param, q);
-        f = sessionStorage.getItem(opt.param);
-        slowSession = sessionStorage.getItem(opt.param + '-slow');
-      } catch (e) { f = q; }
-      if (f === '0') return fallback('forçado simples (?' + opt.param + '=0)');
       if (!root.WebGLRenderingContext) return fallback('sem WebGL');
-      if (f === '1') { forced = true; return true; }
-      var n = navigator;
-      if (!(n.hardwareConcurrency >= opt.minCores)) return fallback('poucos núcleos');
-      if (n.deviceMemory !== undefined && n.deviceMemory < opt.minMemory) return fallback('pouca memória');
-      if (n.connection && n.connection.saveData) return fallback('economia de dados');
       if (reduce) return fallback('movimento reduzido');
-      if (slowSession) return fallback('lente lenta nesta sessão');
       return true;
     }
 
@@ -94,11 +76,6 @@
       glc = doc.createElement('canvas');
       gl = glc.getContext('webgl', { premultipliedAlpha: true, alpha: true, antialias: false, depth: false, stencil: false });
       if (!gl) return fallback('WebGL indisponível');
-      if (!forced) {
-        var info = gl.getExtension('WEBGL_debug_renderer_info');
-        var name = info ? String(gl.getParameter(info.UNMASKED_RENDERER_WEBGL)) : '';
-        if (!info || opt.weakGpu.test(name)) return fallback('placa fraca ou integrada: ' + name);
-      }
       function sh(type, src) { var s = gl.createShader(type); gl.shaderSource(s, src); gl.compileShader(s); return gl.getShaderParameter(s, gl.COMPILE_STATUS) ? s : null; }
       var v = sh(gl.VERTEX_SHADER, VS), f = sh(gl.FRAGMENT_SHADER, FS);
       if (!v || !f) return fallback('shader não compilou');
@@ -117,7 +94,7 @@
       ['t', 'rect', 'size', 'dpr', 'has', 'k', 'M', 'BEND', 'DISP', 'BAND'].forEach(function (n) { loc[n] = gl.getUniformLocation(prog, n); });
       gl.enable(gl.BLEND);
       gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
-      glc.addEventListener('webglcontextlost', function (e) { e.preventDefault(); giveUp(false); });
+      glc.addEventListener('webglcontextlost', function (e) { e.preventDefault(); destroy(); fallback('contexto WebGL perdido'); });
       return true;
     }
 
@@ -235,21 +212,9 @@
       if (recheck) last = now;
       visible.forEach(function (el) { var L = lenses.get(el); if (L && frame(L, recheck)) moved = true; });
       still = moved ? 0 : still + 1;
-      // trava em tempo real: média acima de maxFrameMs nos primeiros 30 quadros em movimento desliga a lente
-      if (moved && !forced && nFrames < 30) {
-        if (prevT) slow += now - prevT;
-        prevT = now;
-        if (++nFrames === 30 && slow / 29 > opt.maxFrameMs) return giveUp(true);
-      } else prevT = 0;
       if (still < 30) raf = requestAnimationFrame(loop);
     }
     function wake() { still = 0; if (!raf && !dead) raf = requestAnimationFrame(loop); }
-
-    function giveUp(remember) {
-      if (remember) { try { sessionStorage.setItem(opt.param + '-slow', '1'); } catch (e) { /* só nesta página */ } }
-      destroy();
-      fallback(remember ? 'lente lenta' : 'contexto WebGL perdido');
-    }
 
     function destroy() {
       dead = true;
