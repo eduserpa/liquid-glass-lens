@@ -59,7 +59,8 @@
 </script>
 <script src="../liquid-glass-lens.js"></script>
 <script>
-  var lg = LiquidGlass({ onFallback: function (why) { document.getElementById('status').textContent = 'Versão simples (CSS): ' + why + '.'; } });
+  // demo com o efeito no máximo; no seu site, os padrões (1.3 / 0.56 / 4.4) são mais discretos
+  var lg = LiquidGlass({ magnify: 1.6, edgeBend: 0.9, dispersion: 9, band: 0.4, onFallback: function (why) { document.getElementById('status').textContent = 'Versão simples (CSS): ' + why + '.'; } });
   setTimeout(function () { if (document.documentElement.classList.contains('lg-on')) document.getElementById('status').textContent = 'Lente WebGL ativa.'; }, 3500);
 </script>
 </body>
