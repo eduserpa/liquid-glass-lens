@@ -1,0 +1,112 @@
+/*!
+ * liquid-glass.css: estilos do liquid-glass-lens.js. Licença MIT.
+ * A) .lg-btn = versão simples (padrão, CSS puro, funciona em tudo): cinza translúcido, borda de 1px, ícone/texto branco.
+ * B) .lg-btn.is-lens = gotinha (o script desenha a lente num canvas e põe .is-lens): sem contorno, o volume vem de várias
+ *    sombras internas claras e escuras (reflexos). Variáveis para ajustar na seção :root abaixo.
+ */
+:root {
+  --lg-size: 44px; /* tamanho do botão redondo */
+  --lg-fallback-bg: rgb(48 49 54 / 0.55); /* texto branco >= 3:1 até sobre fundo branco */
+  --lg-fallback-border: rgb(255 255 255 / 0.4);
+  --lg-ink: #fff; /* cor do ícone/texto na versão simples */
+  --lg-ink-dark: #303136; /* cor sobre fundo claro (gotinha) */
+  --lg-ink-light: #fff; /* cor sobre fundo escuro (gotinha) */
+  --c-light: #fff;
+  --c-dark: #000;
+}
+
+/* A) versão simples */
+.lg-btn {
+  position: relative;
+  display: inline-grid;
+  place-items: center;
+  width: var(--lg-size);
+  height: var(--lg-size);
+  padding: 0;
+  border: 1px solid var(--lg-fallback-border);
+  border-radius: 50%;
+  background: var(--lg-fallback-bg);
+  color: var(--lg-ink);
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.lg-btn.lg-pill {
+  width: auto;
+  padding-inline: 20px;
+  border-radius: 999px;
+}
+
+.lg-btn > :not(.lg-canvas) {
+  position: relative;
+  z-index: 1;
+}
+
+@media (hover: hover) {
+  .lg-btn:hover {
+    transform: scale(1.06);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lg-btn {
+    transition: none;
+  }
+
+  .lg-btn:hover {
+    transform: none;
+  }
+}
+
+.lg-btn:focus-visible {
+  outline: 2px solid currentcolor;
+  outline-offset: 2px;
+}
+
+/* B) gotinha */
+.lg-canvas {
+  position: absolute;
+  inset: -1px;
+  width: calc(100% + 2px);
+  height: calc(100% + 2px);
+  border-radius: inherit;
+  pointer-events: none;
+}
+
+.lg-btn.is-lens {
+  --glass-reflex-light: 1; /* 0 a 2: força dos reflexos claros */
+  --glass-reflex-dark: 1; /* 0 a 2: força dos reflexos escuros */
+  border-color: transparent;
+  background: transparent;
+  box-shadow:
+    0 1px 5px 0 color-mix(in srgb, var(--c-dark) calc(var(--glass-reflex-dark) * 10%), transparent),
+    0 6px 16px 0 color-mix(in srgb, var(--c-dark) calc(var(--glass-reflex-dark) * 8%), transparent);
+}
+
+/* Sobre fundo escuro (o script grava data-lg-ink="light"): reflexo escuro forte, claro fraco */
+.lg-btn.is-lens[data-lg-ink='light'] {
+  --glass-reflex-light: 0.3;
+  --glass-reflex-dark: 2;
+  color: var(--lg-ink-light);
+}
+
+.lg-btn.is-lens[data-lg-ink='dark'] {
+  color: var(--lg-ink-dark);
+}
+
+/* reflexos: ficam num ::after porque o canvas cobriria as sombras internas do próprio botão */
+.lg-btn.is-lens::after {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  pointer-events: none;
+  box-shadow:
+    inset 1.8px 3px 0 -2px color-mix(in srgb, var(--c-light) calc(var(--glass-reflex-light) * 90%), transparent),
+    inset -2px -2px 0 -2px color-mix(in srgb, var(--c-light) calc(var(--glass-reflex-light) * 80%), transparent),
+    inset -3px -8px 1px -6px color-mix(in srgb, var(--c-light) calc(var(--glass-reflex-light) * 60%), transparent),
+    inset -0.3px -1px 4px 0 color-mix(in srgb, var(--c-dark) calc(var(--glass-reflex-dark) * 12%), transparent),
+    inset -1.5px 2.5px 0 -2px color-mix(in srgb, var(--c-dark) calc(var(--glass-reflex-dark) * 20%), transparent),
+    inset 0 3px 4px -2px color-mix(in srgb, var(--c-dark) calc(var(--glass-reflex-dark) * 20%), transparent),
+    inset 2px -6.5px 1px -4px color-mix(in srgb, var(--c-dark) calc(var(--glass-reflex-dark) * 10%), transparent);
+}

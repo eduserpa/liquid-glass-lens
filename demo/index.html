@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Demo: liquid glass lens</title>
+<link rel="stylesheet" href="../liquid-glass.css">
+<style>
+  body { margin: 0; font-family: system-ui, sans-serif; color: #1c2230; background: #f4f6fa; }
+  main { max-width: 960px; margin: 0 auto; padding: 24px 16px 48px; }
+  h1 { font-size: 1.5rem; margin: 0 0 4px; }
+  p { margin: 0 0 16px; line-height: 1.5; }
+  code { background: #e6eaf2; padding: 1px 5px; border-radius: 4px; }
+  .stage { position: relative; overflow: hidden; border-radius: 16px; aspect-ratio: 16 / 7; background: #0b1020; }
+  .stage img { display: block; width: 100%; height: 100%; object-fit: cover; animation: drift 16s ease-in-out infinite alternate; }
+  @keyframes drift { to { transform: scale(1.12) translateX(-3%); } }
+  @media (prefers-reduced-motion: reduce) { .stage img { animation: none; } }
+  .row { position: absolute; display: flex; gap: 12px; align-items: center; }
+  .a { left: 6%; top: 18%; }
+  .b { right: 6%; bottom: 14%; }
+  .c { left: 36%; top: 52%; }
+  .lg-btn svg { width: 14px; height: 14px; }
+  .status { margin-top: 12px; font-size: 0.9rem; color: #4a5368; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Liquid glass lens</h1>
+  <p>Botões de vidro sobre uma imagem em movimento. Aparelho bom mostra a lente (WebGL); os outros, a versão simples do CSS.
+     Force com <code>?glass=1</code> (lente) ou <code>?glass=0</code> (simples).</p>
+  <div class="stage" id="stage">
+    <img id="bg" alt="" width="1600" height="700">
+    <div class="row a">
+      <button class="lg-btn" data-liquid-glass aria-label="Anterior"><svg viewBox="0 0 14 14" fill="none" aria-hidden="true"><path d="M9 2 4 7l5 5" stroke="currentColor" stroke-width="1.5"/></svg></button>
+      <button class="lg-btn" data-liquid-glass aria-label="Pausar"><svg viewBox="0 0 14 14" fill="currentColor" aria-hidden="true"><rect x="3" y="2" width="2.6" height="10"/><rect x="8.4" y="2" width="2.6" height="10"/></svg></button>
+      <button class="lg-btn" data-liquid-glass aria-label="Próximo"><svg viewBox="0 0 14 14" fill="none" aria-hidden="true"><path d="m5 2 5 5-5 5" stroke="currentColor" stroke-width="1.5"/></svg></button>
+    </div>
+    <div class="row c">
+      <button class="lg-btn lg-pill" data-liquid-glass style="height:52px" data-lg-magnify="1.5" data-lg-edge-bend="0.7"><span>Botão em pílula</span></button>
+    </div>
+    <div class="row b">
+      <button class="lg-btn" data-liquid-glass style="--lg-size:88px" data-lg-magnify="1.4" data-lg-dispersion="6" aria-label="Lente grande"><svg viewBox="0 0 14 14" fill="none" aria-hidden="true"><path d="m5 2 5 5-5 5" stroke="currentColor" stroke-width="1.5"/></svg></button>
+    </div>
+  </div>
+  <p class="status" id="status">Versão simples (CSS).</p>
+</main>
+<script>
+  // Imagem gerada aqui (grade, texto e formas): nada externo, para a lente ter detalhes para refratar.
+  (function () {
+    var s = '<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="700" viewBox="0 0 1600 700">' +
+      '<defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#1b2a5c"/><stop offset=".55" stop-color="#6b3fa0"/><stop offset="1" stop-color="#f08a4b"/></linearGradient>' +
+      '<pattern id="p" width="40" height="40" patternUnits="userSpaceOnUse"><path d="M40 0H0V40" fill="none" stroke="#fff" stroke-opacity=".28" stroke-width="1.5"/></pattern></defs>' +
+      '<rect width="1600" height="700" fill="url(#g)"/><rect width="1600" height="700" fill="url(#p)"/>' +
+      '<circle cx="1180" cy="210" r="150" fill="none" stroke="#fff" stroke-width="10" stroke-opacity=".7"/>' +
+      '<circle cx="360" cy="480" r="90" fill="#ffd36b"/><rect x="620" y="120" width="260" height="260" rx="24" fill="#12d6c4" fill-opacity=".85"/>' +
+      '<text x="90" y="250" font-family="Arial, sans-serif" font-weight="700" font-size="150" fill="#fff">Liquid glass</text>' +
+      '<text x="90" y="640" font-family="Arial, sans-serif" font-weight="700" font-size="90" fill="#0b1020">lens demo</text></svg>';
+    document.getElementById('bg').src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(s);
+  })();
+</script>
+<script src="../liquid-glass-lens.js"></script>
+<script>
+  var lg = LiquidGlass({ onFallback: function (why) { document.getElementById('status').textContent = 'Versão simples (CSS): ' + why + '.'; } });
+  setTimeout(function () { if (document.documentElement.classList.contains('lg-on')) document.getElementById('status').textContent = 'Lente WebGL ativa.'; }, 3500);
+</script>
+</body>
+</html>
