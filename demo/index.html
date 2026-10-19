@@ -20,6 +20,7 @@
   .b { right: 6%; bottom: 14%; }
   .c { left: 36%; top: 52%; }
   .lg-btn svg { width: 14px; height: 14px; }
+  .lg-btn[data-lg-draggable] { gap: 8px; }
   .status { margin-top: 12px; font-size: 0.9rem; color: #4a5368; }
 </style>
 </head>
@@ -35,10 +36,10 @@
       <button class="lg-btn" data-liquid-glass aria-label="Próximo"><svg viewBox="0 0 14 14" fill="none" aria-hidden="true"><path d="m5 2 5 5-5 5" stroke="currentColor" stroke-width="1.5"/></svg></button>
     </div>
     <div class="row c">
-      <button class="lg-btn lg-pill" data-liquid-glass data-lg-draggable style="height:52px" data-lg-magnify="1.5" data-lg-edge-bend="0.7"><span>Botão em pílula</span></button>
+      <button class="lg-btn lg-pill" data-liquid-glass data-lg-draggable style="height:52px" data-lg-magnify="1.5" data-lg-edge-bend="0.7"><svg viewBox="0 0 14 14" fill="currentColor" aria-hidden="true"><circle cx="4.5" cy="3" r="1.2"/><circle cx="9.5" cy="3" r="1.2"/><circle cx="4.5" cy="7" r="1.2"/><circle cx="9.5" cy="7" r="1.2"/><circle cx="4.5" cy="11" r="1.2"/><circle cx="9.5" cy="11" r="1.2"/></svg><span>Arraste a pílula</span></button>
     </div>
     <div class="row b">
-      <button class="lg-btn" data-liquid-glass data-lg-draggable style="--lg-size:88px" data-lg-magnify="1.4" data-lg-dispersion="6" aria-label="Lente grande"><svg viewBox="0 0 14 14" fill="none" aria-hidden="true"><path d="m5 2 5 5-5 5" stroke="currentColor" stroke-width="1.5"/></svg></button>
+      <button class="lg-btn" data-liquid-glass data-lg-draggable style="--lg-size:88px" data-lg-magnify="1.4" data-lg-dispersion="6" aria-label="Lente grande (arraste)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="width:28px;height:28px"><path d="M12 3v18M3 12h18M12 3l-3 3M12 3l3 3M12 21l-3-3M12 21l3-3M3 12l3-3M3 12l3 3M21 12l-3-3M21 12l-3 3"/></svg></button>
     </div>
   </div>
   <p class="status" id="status">Versão simples (CSS).</p>
