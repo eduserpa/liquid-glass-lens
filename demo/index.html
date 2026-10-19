@@ -26,7 +26,7 @@
 <body>
 <main>
   <h1>Liquid glass lens</h1>
-  <p>Botões de vidro sobre uma imagem em movimento. Com WebGL aparece a lente; sem WebGL, a versão simples do CSS.</p>
+  <p>Botões de vidro sobre uma imagem em movimento. Com WebGL aparece a lente; sem WebGL, a versão simples do CSS. <strong>Arraste a lente grande e a pílula.</strong></p>
   <div class="stage" id="stage">
     <img id="bg" alt="" width="1600" height="700">
     <div class="row a">
@@ -35,10 +35,10 @@
       <button class="lg-btn" data-liquid-glass aria-label="Próximo"><svg viewBox="0 0 14 14" fill="none" aria-hidden="true"><path d="m5 2 5 5-5 5" stroke="currentColor" stroke-width="1.5"/></svg></button>
     </div>
     <div class="row c">
-      <button class="lg-btn lg-pill" data-liquid-glass style="height:52px" data-lg-magnify="1.5" data-lg-edge-bend="0.7"><span>Botão em pílula</span></button>
+      <button class="lg-btn lg-pill" data-liquid-glass data-lg-draggable style="height:52px" data-lg-magnify="1.5" data-lg-edge-bend="0.7"><span>Botão em pílula</span></button>
     </div>
     <div class="row b">
-      <button class="lg-btn" data-liquid-glass style="--lg-size:88px" data-lg-magnify="1.4" data-lg-dispersion="6" aria-label="Lente grande"><svg viewBox="0 0 14 14" fill="none" aria-hidden="true"><path d="m5 2 5 5-5 5" stroke="currentColor" stroke-width="1.5"/></svg></button>
+      <button class="lg-btn" data-liquid-glass data-lg-draggable style="--lg-size:88px" data-lg-magnify="1.4" data-lg-dispersion="6" aria-label="Lente grande"><svg viewBox="0 0 14 14" fill="none" aria-hidden="true"><path d="m5 2 5 5-5 5" stroke="currentColor" stroke-width="1.5"/></svg></button>
     </div>
   </div>
   <p class="status" id="status">Versão simples (CSS).</p>

@@ -60,6 +60,8 @@ Objeto passado a `LiquidGlass({...})`:
 
 Por elemento, atributos `data-` sobrepõem o objeto: `data-lg-magnify`, `data-lg-edge-bend`, `data-lg-dispersion`, `data-lg-band`.
 
+**Arrastável:** acrescente `data-lg-draggable` ao elemento. Ele segue o mouse ou o dedo, estica na direção do movimento e volta ao formato com efeito de mola ao soltar, refratando o que passa por baixo. Com `prefers-reduced-motion`, só arrasta, sem esticar nem quicar.
+
 No CSS: `--lg-size` (tamanho do botão redondo), `--lg-fallback-bg`, `--lg-fallback-border`, `--lg-ink`, `--lg-ink-dark`, `--lg-ink-light`, `--glass-reflex-light` e `--glass-reflex-dark` (0 a 2, força dos reflexos de luz e sombra).
 
 ## Quando a lente liga (e quando não)

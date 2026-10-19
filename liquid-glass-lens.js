@@ -158,8 +158,39 @@
       el.insertBefore(canvas, el.firstChild);
       el.classList.add('is-lens');
       var num = function (n, d) { var v = parseFloat(el.getAttribute('data-lg-' + n)); return isNaN(v) ? d : v; };
+      if (el.hasAttribute('data-lg-draggable')) draggable(el);
       return { el: el, canvas: canvas, ctx: canvas.getContext('2d'), img: null, sig: '', src: null,
         M: num('magnify', opt.magnify), BEND: num('edge-bend', opt.edgeBend), DISP: num('dispersion', opt.dispersion), BAND: num('band', opt.band) };
+    }
+
+    // Arrastável (opcional, data-lg-draggable): estica na direção do movimento e volta com mola ao soltar.
+    function draggable(el) {
+      var x = 0, y = 0, ox = 0, oy = 0, px = 0, py = 0, id = null;
+      el.style.touchAction = 'none';
+      el.style.cursor = 'grab';
+      function place(sx, sy) { el.style.transform = 'translate(' + x + 'px,' + y + 'px) scale(' + sx + ',' + sy + ')'; wake(); }
+      el.addEventListener('pointerdown', function (e) {
+        id = e.pointerId; el.setPointerCapture(id);
+        ox = e.clientX - x; oy = e.clientY - y; px = e.clientX; py = e.clientY;
+        el.style.transition = 'none'; el.style.cursor = 'grabbing';
+      });
+      el.addEventListener('pointermove', function (e) {
+        if (e.pointerId !== id) return;
+        var vx = e.clientX - px, vy = e.clientY - py, v = Math.hypot(vx, vy) || 1, s = reduce ? 0 : Math.min(v / 45, 0.22);
+        px = e.clientX; py = e.clientY; x = e.clientX - ox; y = e.clientY - oy;
+        var cx = Math.abs(vx) / v, cy = Math.abs(vy) / v; // estica no eixo do movimento, afina no outro
+        place(1 + s * cx - s * 0.6 * cy, 1 + s * cy - s * 0.6 * cx);
+      });
+      function up(e) {
+        if (e.pointerId !== id) return;
+        id = null; el.style.cursor = 'grab';
+        el.style.transition = reduce ? 'none' : 'transform .5s cubic-bezier(.34,1.56,.64,1)';
+        place(1, 1);
+        var t0 = performance.now();
+        (function follow(now) { wake(); if (now - t0 < 550) requestAnimationFrame(follow); })(t0);
+      }
+      el.addEventListener('pointerup', up);
+      el.addEventListener('pointercancel', up);
     }
 
     // Um quadro de um elemento: acha a imagem atrás (a cada 250 ms), sobe os uniforms e desenha na GPU. true = algo mudou.
